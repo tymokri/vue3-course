@@ -1,3 +1,7 @@
+ Чим відрізняються файли в папках 'views' / 'components' ?
+ компонент 'HelloWorld.vue' - це контент сторінки 'About' /* views/AboutView.vue */
+ 
+ 
 # vue3-course
 
 ## Project setup
