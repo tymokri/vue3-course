@@ -1,5 +1,7 @@
 <template>
 <!--  views - as pages -->
+<!--  Чим відрізняються файли в папках 'views' / 'components' ?-->
+<!--  компонент 'HelloWorld.vue' - це контент сторінки 'About' /* views/AboutView.vue */-->
   <div class="myComponent">
     <h1>Hello! It's My Component from views (from my own page)</h1>
     <h3>Posts page</h3>
@@ -38,6 +40,20 @@
           v-if="!isPostsLoading"
       />
       <div v-else>Loading...</div>
+
+      <div class="page__wrapper">
+        <div
+            class="page"
+            :class="{
+              'current-page': pageNumber === page
+            }"
+            v-for="page in totalPages"
+            :key="pageNumber"
+            @click="changePageHandler(page)"
+        >
+          {{ page }}
+        </div>
+      </div>
       <!--     в PostList підписуємся на подію 'remove' @remove="removePostHandler"-->
       <!--          <button-->
       <!--              class="btn"-->
@@ -79,6 +95,9 @@ export default {
       isPostsLoading: false,
       selectedSort: '',
       searchQuery: '',
+      pageNumber: 1,
+      pageLimit: 10,
+      totalPages: 0,
       sortOptions: [
         {value: 'title', name: 'By name'},
         {value: 'body', name: 'By description'},
@@ -101,7 +120,13 @@ export default {
       try {
         this.isPostsLoading = true;
         setTimeout(async () => {
-          const response = await axios.get('https://jsonplaceholder.typicode.com/posts?_limit=10')
+          const response = await axios.get('https://jsonplaceholder.typicode.com/posts', {
+            params: {
+              _page: this.pageNumber,
+              _limit: this.pageLimit
+            }
+          });
+          this.totalPages = Math.ceil(response.headers['x-total-count'] / this.pageLimit);
           this.posts = response.data;
           this.isPostsLoading = false;
         }, 1500);
@@ -111,6 +136,11 @@ export default {
         // якби не setTimeout - писали б тут
         // this.isPostsLoading = false;
       }
+    },
+    changePageHandler(newPageNumber) {
+      this.pageNumber = newPageNumber;
+      // для пагінації можна так, або через окрему фунцію в watch
+      // this.fetchPosts();
     }
   },
   mounted() {
@@ -126,6 +156,11 @@ export default {
       return this.sortedPost.filter(post => post.title.toLowerCase().includes(this.searchQuery.toLowerCase()))
     }
   },
+  watch: {
+    pageNumber() {
+      this.fetchPosts();
+    }
+  }
   // watch: {
   //   // функ в 'watch' має мати назву точно як названа модель (стр.71)
   //   selectedSort(newValue) {
@@ -146,6 +181,20 @@ export default {
   display: flex;
   justify-content: center;
   gap: 30px;
+}
+.page__wrapper {
+  display: flex;
+  margin-top: 16px;
+  gap: 6px;
+}
+.page {
+  border: 1px solid black;
+  border-radius: 6px;
+  padding: 12px;
+  cursor: pointer;
+}
+.current-page {
+  border: 2px solid #42b983;
 }
 </style>
 
