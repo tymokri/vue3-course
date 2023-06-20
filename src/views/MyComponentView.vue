@@ -41,19 +41,26 @@
       />
       <div v-else>Loading...</div>
 
-      <div class="page__wrapper">
-        <div
-            class="page"
-            :class="{
-              'current-page': pageNumber === page
-            }"
-            v-for="page in totalPages"
-            :key="pageNumber"
-            @click="changePageHandler(page)"
-        >
-          {{ page }}
-        </div>
-      </div>
+      <div
+          ref="observer"
+          class="observer"
+      ></div>
+
+<!--      <div class="page__wrapper">-->
+<!--        <div-->
+<!--            class="page"-->
+<!--            :class="{-->
+<!--              'current-page': pageNumber === page-->
+<!--            }"-->
+<!--            v-for="page in totalPages"-->
+<!--            :key="pageNumber"-->
+<!--            @click="changePageHandler(page)"-->
+<!--        >-->
+<!--          {{ page }}-->
+<!--        </div>-->
+
+
+<!--      </div>-->
       <!--     в PostList підписуємся на подію 'remove' @remove="removePostHandler"-->
       <!--          <button-->
       <!--              class="btn"-->
@@ -137,14 +144,48 @@ export default {
         // this.isPostsLoading = false;
       }
     },
-    changePageHandler(newPageNumber) {
-      this.pageNumber = newPageNumber;
-      // для пагінації можна так, або через окрему фунцію в watch
-      // this.fetchPosts();
-    }
+    async loadMorePosts() {
+      try {
+        this.pageNumber += 1;
+        setTimeout(async () => {
+          const response = await axios.get('https://jsonplaceholder.typicode.com/posts', {
+            params: {
+              _page: this.pageNumber,
+              _limit: this.pageLimit
+            }
+          });
+          this.totalPages = Math.ceil(response.headers['x-total-count'] / this.pageLimit);
+          this.posts = [...this.posts, ...response.data];
+        }, 1500);
+      } catch (e) {
+        console.log(e);
+      }
+    },
+
+    // для статичної пагінації
+    // changePageHandler(newPageNumber) {
+    //   this.pageNumber = newPageNumber;
+    //   // для пагінації можна так, або через окрему фунцію в watch
+    //   // this.fetchPosts();
+    // }
   },
   mounted() {
     this.fetchPosts();
+    console.log(this.$refs.observer); // посилання на ноду
+    const options = {
+      rootMargin: '0px',
+      threshold: 1.0
+    }
+    const callback = (entries, observer) => {
+      if (entries[0].isIntersecting && this.pageNumber < this.totalPages) {
+        this.loadMorePosts();
+      }
+    };
+    const observer = new IntersectionObserver(callback, options);
+
+    observer.observe(this.$refs.observer);
+
+
   },
   // computed - використовуємо як змінну і звертаємось до неї по назві sortedPost (стр.29)
   computed: {
@@ -157,9 +198,9 @@ export default {
     }
   },
   watch: {
-    pageNumber() {
-      this.fetchPosts();
-    }
+    // pageNumber() {
+    //   this.fetchPosts();
+    // }
   }
   // watch: {
   //   // функ в 'watch' має мати назву точно як названа модель (стр.71)
@@ -196,5 +237,10 @@ export default {
 .current-page {
   border: 2px solid #42b983;
 }
+/*для перевірки зони для автоматичного завантаження*/
+/*.observer {*/
+/*  height: 20px;*/
+/*  background: red;*/
+/*}*/
 </style>
 
