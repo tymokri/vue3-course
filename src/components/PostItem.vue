@@ -8,6 +8,12 @@
 
     <div class="post__buttons">
       <MyButton
+          @click="$router.push(`/posts/${post.id}`)"
+      >
+        Open
+      </MyButton>
+
+      <MyButton
           @click="$emit('remove', post)"
       >
         Delete
@@ -46,5 +52,9 @@ export default {
   gap: 8px;
   margin-bottom: 6px;
   text-align: start;
+}
+.post__buttons {
+  display: flex;
+  gap: 6px;
 }
 </style>

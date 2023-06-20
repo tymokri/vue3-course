@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
+import PostItemView from "../views/PostItemView.vue";
 // import MyComponent from "../views/MyComponentView.vue";
 
 const routes = [
@@ -17,11 +18,15 @@ const routes = [
     component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
   },
   {
-    path: '/myComponent',
-    name: 'myComponent',
+    path: '/posts',
+    name: 'posts',
     // можна підключити компонент двома способами:
     component: () => import(/* webpackChunkName: "about" */ '../views/MyComponentView.vue')
     // component: MyComponent // який резон через функцію це робити? (строка 17)
+  },
+  {
+    path: '/posts/:id',
+    component: PostItemView
   }
 ]
 
